@@ -36,4 +36,6 @@ public class RestaurantDto {
     private List<PhotoDto> photos = new ArrayList<>();
 
     private UserDto createdBy;
+
+    private Integer totalReviews;
 }
