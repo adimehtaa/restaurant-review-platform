@@ -1,6 +1,9 @@
 package space.personalshowcase.restaurant_review_platform.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import space.personalshowcase.restaurant_review_platform.domain.ReviewCreateUpdateRequest;
 import space.personalshowcase.restaurant_review_platform.domain.entities.Photo;
@@ -13,6 +16,7 @@ import space.personalshowcase.restaurant_review_platform.repositories.Restaurant
 import space.personalshowcase.restaurant_review_platform.services.ReviewService;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,6 +70,32 @@ public class ReviewServiceImpl implements ReviewService {
                 .filter( r -> reviewId.equals(r.getId()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Error Retrieving create review"));
+    }
+
+    @Override
+    public Page<Review> listReview(String restaurantId, Pageable pageable) {
+        Restaurant restaurant =  getRestaurantOrThrow(restaurantId);
+        List<Review> reviews = restaurant.getReviews();
+
+        Sort sort = pageable.getSort();
+
+        if (sort.isSorted()) {
+            Sort.Order order = sort.iterator().next();
+            String property = order.getProperty();
+            boolean isAscending = order.isAscending();
+
+            Comparator<Review> comparator =  switch (property){
+                case "dataPosted" -> Comparator.comparing(Review::getDatePosted);
+                case "rating" -> Comparator.comparing(Review::getRating);
+                default -> Comparator.comparing(Review::getDatePosted);
+            };
+
+            reviews.sort(isAscending ? comparator : comparator.reversed());
+        } else {
+            reviews.sort(Comparator.comparing(Review::getDatePosted).reversed());
+        }
+
+        return null;
     }
 
     private Restaurant getRestaurantOrThrow(String restaurantId) {
