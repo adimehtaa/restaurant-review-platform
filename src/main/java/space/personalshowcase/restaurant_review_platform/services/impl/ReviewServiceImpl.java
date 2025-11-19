@@ -126,8 +126,6 @@ public class ReviewServiceImpl implements ReviewService {
                     .average().orElse(0.0);
 
             restaurant.setAverageRating((float) averageRating);
-
-
         }
     }
 }

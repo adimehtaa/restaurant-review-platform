@@ -2,6 +2,10 @@ package space.personalshowcase.restaurant_review_platform.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,6 +38,18 @@ public class ReviewController {
         Review saveReview = reviewService.createReview(user, restaurantId , dto);
 
         return new ResponseEntity<>(reviewMapper.toReviewDto(saveReview) , HttpStatus.OK);
+    }
+
+    @GetMapping
+    public Page<ReviewDto> listReviews(
+            @PathVariable String restaurantId,
+            @PageableDefault(size = 20 ,
+                    page = 0 ,
+                    sort = "datePosted",
+                    direction = Sort.Direction.DESC) Pageable pageable
+            ) {
+        return reviewService.listReview(restaurantId , pageable)
+                .map(reviewMapper::toReviewDto);
     }
 
     private User jwtToUser(Jwt jwt){
