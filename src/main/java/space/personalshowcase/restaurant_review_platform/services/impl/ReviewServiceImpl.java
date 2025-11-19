@@ -2,6 +2,7 @@ package space.personalshowcase.restaurant_review_platform.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import space.personalshowcase.restaurant_review_platform.repositories.Restaurant
 import space.personalshowcase.restaurant_review_platform.services.ReviewService;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -95,7 +97,16 @@ public class ReviewServiceImpl implements ReviewService {
             reviews.sort(Comparator.comparing(Review::getDatePosted).reversed());
         }
 
-        return null;
+        int start = (int) pageable.getOffset();
+
+        if (start >= reviews.size())
+        {
+            return new PageImpl<>(Collections.emptyList(),pageable , reviews.size());
+        }
+
+        int end = Math.min(start + pageable.getPageSize() , reviews.size());
+
+        return new PageImpl<>(reviews.subList(start , end), pageable , reviews.size());
     }
 
     private Restaurant getRestaurantOrThrow(String restaurantId) {
